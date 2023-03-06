@@ -37,13 +37,13 @@ function makeSelection(selection) {
   if (computerWinner) incrementScore(computerScoreSpan);
 
   if (gameMode === 'best-out-of-three') {
-    if (yourScoreSpan.textContent == 2) {
-      alert('You win the game!');
+    if (yourScoreSpan.textContent == 3) {
+      gameOver('You win the game!', true);
       resetScore();
       resetResults();
       return;
-    } else if (computerScoreSpan.textContent == 2) {
-      alert('You lose the game!');
+    } else if (computerScoreSpan.textContent == 3) {
+      gameOver('You lose the game!', false);
       resetScore();
       resetResults();
       return;
@@ -64,7 +64,7 @@ function addSelectionResult(selection, winner) {
 }
 
 function handleSelection(e) {
-  if (gameMode === 'continuous' || (gameMode === 'best-out-of-three' && (yourScoreSpan.textContent < 2 && computerScoreSpan.textContent < 2))) {
+  if (gameMode === 'continuous' || (gameMode === 'best-out-of-three' && (yourScoreSpan.textContent < 3 && computerScoreSpan.textContent < 3))) {
     makeSelection(SELECTIONS.find(selection => selection.name === e.target.dataset.selection));
   }
 }
@@ -73,6 +73,16 @@ function handleCheckbox(e) {
   gameMode = e.target.checked ? 'best-out-of-three' : 'continuous';
   resetScore();
   resetResults();
+}
+
+function gameOver(message, isWinner) {
+  const resultMessage = document.createElement('div');
+  resultMessage.classList.add('result-message');
+  resultMessage.textContent = message;
+  resultMessage.style.color = isWinner ? 'lawngreen' : 'red';
+  document.body.appendChild(resultMessage);
+  document.body.classList.add('game-over');
+  
 }
 
 selectionButtons.forEach(button => {

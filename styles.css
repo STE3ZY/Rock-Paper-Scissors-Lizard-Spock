@@ -120,3 +120,16 @@ input:checked + .slider:before {
   opacity: 1;
   font-size: 3rem;
 }
+
+body.game-over :not(.result-message) {
+  opacity: 0.5;
+}
+
+.result-message {
+  font-weight: 900;
+  font-size: 5em;
+  display: flex;
+  justify-content: center;
+  align-items: center ;
+
+}
