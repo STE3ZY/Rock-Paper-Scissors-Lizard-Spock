@@ -1,151 +1,82 @@
-var checkbox = document.querySelector("input[name=checkbox]");
-
-checkbox.addEventListener('change', e => {
-
-  if(e.target.checked){
-      //do something
-      gameThree();
-  }
-  else {
-    gameCont();
-  }
-
+window.addEventListener('load', function() {
+  document.querySelector('input[name="game-mode"]').checked = false;
 });
 
-const selectionButtons = document.querySelectorAll('[data-selection]')
-const finalColumn = document.querySelector('[data-final-column]')
-const computerScoreSpan = document.querySelector('[data-computer-score]')
-const yourScoreSpan = document.querySelector('[data-your-score]')
-const SELECTIONS = [
-  {
-    name: 'rock',
-    emoji: '✊🏻',
-    beats1: 'scissors',
-    beats2: 'lizard'
-  },
-  {
-    name: 'paper',
-    emoji: '✋🏻',
-    beats1: 'rock',
-    beats2: 'spock'
-  },
-  {
-    name: 'scissors',
-    emoji: '✌🏻',
-    beats1: 'paper',
-    beats2: 'lizard'
-  },
-  {
-    name: 'lizard',
-    emoji: '🦎',
-    beats1: 'paper',
-    beats2: 'spock'
-  },
-  {
-    name: 'spock',
-    emoji: '🖖🏻',
-    beats1: 'scissors',
-    beats2: 'rock'
-    
-  }
-]
-let isChangingMode = false;
+const SELECTIONS = [  { name: 'rock', emoji: '✊🏻', beats: ['scissors', 'lizard'] },
+  { name: 'paper', emoji: '✋🏻', beats: ['rock', 'spock'] },
+  { name: 'scissors', emoji: '✌🏻', beats: ['paper', 'lizard'] },
+  { name: 'lizard', emoji: '🦎', beats: ['paper', 'spock'] },
+  { name: 'spock', emoji: '🖖🏻', beats: ['scissors', 'rock'] }
+];
 
-function gameCont(){
-  yourScoreSpan.innerText = '0';
-  computerScoreSpan.innerText = '0';
-  isChangingMode = true;
-  selectionButtons.forEach(selectionButton => {
-    selectionButton.removeEventListener('click', makeSelection);
-    selectionButton.addEventListener('click', e => {
-      if (!isChangingMode) {
-        const selectionName = selectionButton.dataset.selection
-        const selection = SELECTIONS.find(selection => selection.name === selectionName)
-        makeSelection(selection)
-      }
-    })
-  })
-  isChangingMode = false;
+const selectionButtons = document.querySelectorAll('[data-selection]');
+const finalColumn = document.querySelector('[data-final-column]');
+const computerScoreSpan = document.querySelector('[data-computer-score]');
+const yourScoreSpan = document.querySelector('[data-your-score]');
+let gameMode = 'continuous';
 
-checkbox.addEventListener('change', e => {
-
-  if(e.target.checked){
-      //do something
-      return gameThree();
-  }
-  else {
-    return gameCont();
-  }
-
-});
+function resetScore() {
+  yourScoreSpan.textContent = 0;
+  computerScoreSpan.textContent = 0;
 }
 
-function gameThree(){
-  yourScoreSpan.innerText = '0';
-  computerScoreSpan.innerText = '0';
-  isChangingMode = true;
-  selectionButtons.forEach(selectionButton => {
-    selectionButton.removeEventListener('click', makeSelection);
-    selectionButton.addEventListener('click', e => {
-      if (!isChangingMode) {
-        const selectionName = selectionButton.dataset.selection
-        const selection = SELECTIONS.find(selection => selection.name === selectionName)
-        makeSelection(selection)
-      }
-    })
-  })
-  isChangingMode = false;
-  while ((yourScoreSpan < 3)&&(computerScoreSpan < 3)){
-    yourScoreSpan.innerText = '0';
-    computerScoreSpan.innerText = '0';
-  }
-
-  if (yourScoreSpan == '2'){
-    alert('You win the game');
-    return;
-  }
-  else if (computerScoreSpan == '2'){
-    alert('You lose the game');
-   return;
-  }
- 
+function resetResults() {
+  const results = document.querySelectorAll('.result-selection');
+  results.forEach(result => result.remove());
 }
-
 
 function makeSelection(selection) {
-  const computerSelection = randomSelection()
-  const yourWinner = isWinner(selection, computerSelection)
-  const computerWinner = isWinner(computerSelection, selection)
+  const computerSelection = SELECTIONS[Math.floor(Math.random() * SELECTIONS.length)];
+  const yourWinner = selection.beats.includes(computerSelection.name);
+  const computerWinner = computerSelection.beats.includes(selection.name);
 
-  addSelectionResult(computerSelection, computerWinner)
-  addSelectionResult(selection, yourWinner)
+  addSelectionResult(computerSelection, computerWinner);
+  addSelectionResult(selection, yourWinner);
 
-  if (yourWinner) incrementScore(yourScoreSpan)
-  if (computerWinner) incrementScore(computerScoreSpan)
+  if (yourWinner) incrementScore(yourScoreSpan);
+  if (computerWinner) incrementScore(computerScoreSpan);
+
+  if (gameMode === 'best-out-of-three') {
+    if (yourScoreSpan.textContent == 2) {
+      alert('You win the game!');
+      resetScore();
+      resetResults();
+      return;
+    } else if (computerScoreSpan.textContent == 2) {
+      alert('You lose the game!');
+      resetScore();
+      resetResults();
+      return;
+    }
+  }
 }
 
 function incrementScore(scoreSpan) {
-  scoreSpan.innerText = parseInt(scoreSpan.innerText) + 1
+  scoreSpan.textContent++;
 }
 
 function addSelectionResult(selection, winner) {
-  const div = document.createElement('div')
-  div.innerText = selection.emoji
-  div.classList.add('result-selection')
-  if (winner) div.classList.add('winner')
-  finalColumn.after(div)
+  const div = document.createElement('div');
+  div.textContent = selection.emoji;
+  div.classList.add('result-selection');
+  if (winner) div.classList.add('winner');
+  finalColumn.after(div);
 }
 
-function isWinner(selection, opponentSelection) {
-  return (selection.beats1 === opponentSelection.name) || (selection.beats2 === opponentSelection.name)
+function handleSelection(e) {
+  if (gameMode === 'continuous' || (gameMode === 'best-out-of-three' && (yourScoreSpan.textContent < 2 && computerScoreSpan.textContent < 2))) {
+    makeSelection(SELECTIONS.find(selection => selection.name === e.target.dataset.selection));
+  }
 }
 
-function randomSelection() {
-  const randomIndex = Math.floor(Math.random() * SELECTIONS.length)
-  return SELECTIONS[randomIndex]
+function handleCheckbox(e) {
+  gameMode = e.target.checked ? 'best-out-of-three' : 'continuous';
+  resetScore();
+  resetResults();
 }
 
-window.onload = function() {
-  gameCont();
-}
+selectionButtons.forEach(button => {
+  button.addEventListener('click', handleSelection);
+});
 
+document.querySelector('input[name="game-mode"]').addEventListener('change', handleCheckbox);
