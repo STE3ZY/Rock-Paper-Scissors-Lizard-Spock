@@ -38,14 +38,14 @@ function makeSelection(selection) {
 
   if (gameMode === 'best-out-of-three') {
     if (yourScoreSpan.textContent == 3) {
-      gameOver('You win the game!', true);
-      resetScore();
-      resetResults();
+      gameOver('You win 😀', true);
+      // resetScore();
+      // resetResults();
       return;
     } else if (computerScoreSpan.textContent == 3) {
-      gameOver('You lose the game!', false);
-      resetScore();
-      resetResults();
+      gameOver('You lose 🙁', false);
+      // resetScore();
+      // resetResults();
       return;
     }
   }
@@ -81,9 +81,24 @@ function gameOver(message, isWinner) {
   resultMessage.textContent = message;
   resultMessage.style.color = isWinner ? 'lawngreen' : 'red';
   document.body.appendChild(resultMessage);
-  document.body.classList.add('game-over');
   
+  const gameContainer = document.getElementById('game-container');
+  gameContainer.classList.add('game-over');
+
+  setTimeout(() => {
+    gameContainer.style.opacity = '0.1';
+    document.addEventListener('click', function handleResultClick() {
+      resetScore();
+      resetResults();
+      gameContainer.classList.remove('game-over');
+      gameContainer.style.opacity = '1';
+      resultMessage.remove();
+      document.removeEventListener('click', handleResultClick);
+    }, { once: true });
+  }, 100);
+
 }
+
 
 selectionButtons.forEach(button => {
   button.addEventListener('click', handleSelection);
